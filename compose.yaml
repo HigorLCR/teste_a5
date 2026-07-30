@@ -1,0 +1,28 @@
+services:
+  postgres:
+    # Versao fixada (o 'latest' gerado pelo Initializr quebra reprodutibilidade:
+    # amanha pode baixar outra versao). Alpine = imagem pequena.
+    image: 'postgres:17-alpine'
+    container_name: 'locadora-postgres'
+    environment:
+      - 'POSTGRES_DB=locadora'
+      - 'POSTGRES_USER=locadora'
+      - 'POSTGRES_PASSWORD=locadora'
+    ports:
+      # 'porta_do_seu_windows:porta_do_container'. O Initializr gerou apenas
+      # '5432' (porta aleatoria no host); fixar em 5432 permite voce abrir o
+      # banco em um cliente visual (DBeaver/pgAdmin) sempre no mesmo lugar.
+      - '5432:5432'
+    volumes:
+      # Volume nomeado: os dados sobrevivem a 'docker compose down'.
+      - 'pgdata:/var/lib/postgresql/data'
+    healthcheck:
+      # O Postgres aceita conexoes alguns segundos depois do container subir.
+      # Isso avisa o Docker (e o Spring) quando ele esta realmente pronto.
+      test: ['CMD-SHELL', 'pg_isready -U locadora -d locadora']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
