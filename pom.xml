@@ -51,6 +51,15 @@
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-database-postgresql</artifactId>
 		</dependency>
+		<!-- Documentacao interativa (OpenAPI 3 + Swagger UI). A versao e explicita
+		     porque o spring-boot-starter-parent nao gerencia o springdoc. A linha
+		     3.x e a compativel com Spring Boot 4 / Spring Framework 7; a 2.x atende
+		     o Boot 3 e nao funciona aqui. -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>3.0.3</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
