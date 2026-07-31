@@ -12,7 +12,9 @@ class TestcontainersConfiguration {
 	@Bean
 	@ServiceConnection
 	PostgreSQLContainer postgresContainer() {
-		return new PostgreSQLContainer(DockerImageName.parse("postgres:latest"));
+		// Mesma imagem do compose.yaml: o teste roda contra a versao exata que a
+		// aplicacao usa. Com 'latest', teste e producao poderiam divergir.
+		return new PostgreSQLContainer(DockerImageName.parse("postgres:17-alpine"));
 	}
 
 }
