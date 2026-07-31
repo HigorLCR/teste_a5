@@ -12,13 +12,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 /**
- * Emissao dos tokens JWT.
- *
- * <p>Um JWT tem tres partes separadas por ponto: cabecalho, payload e
- * assinatura. As duas primeiras sao apenas Base64 — <b>legiveis por qualquer
- * um</b>. O que o token garante nao e sigilo, e sim integridade: sem a chave
- * secreta ninguem consegue produzir uma assinatura valida para um payload
- * alterado. Por isso nunca se coloca senha ou dado sensivel dentro dele.
+ * Emissao dos tokens JWT. O payload e apenas Base64, legivel por qualquer um: o
+ * token garante integridade, nao sigilo. Nada sensivel entra nas claims.
  */
 @Service
 public class TokenService {
@@ -39,16 +34,13 @@ public class TokenService {
                 .issuer("locadora-godzilla")
                 .issuedAt(agora)
                 .expiresAt(agora.plus(duracaoMinutos, ChronoUnit.MINUTES))
-                // O "subject" e a identidade do dono do token. Guardamos o id do
-                // usuario: e ele que o endpoint de aluguel usa para saber QUEM
-                // esta alugando, sem confiar em nada que venha no corpo.
+                // O subject e o id do cliente: e dele que o aluguel tira a identidade.
                 .subject(usuario.getId().toString())
                 .claim("email", usuario.getEmail())
                 .claim("nome", usuario.getNome())
                 .build();
 
-        JwsHeader cabecalho = JwsHeader.with(MacAlgorithm.HS256).build();
-
-        return jwtEncoder.encode(JwtEncoderParameters.from(cabecalho, claims)).getTokenValue();
+        return jwtEncoder.encode(JwtEncoderParameters.from(
+                JwsHeader.with(MacAlgorithm.HS256).build(), claims)).getTokenValue();
     }
 }

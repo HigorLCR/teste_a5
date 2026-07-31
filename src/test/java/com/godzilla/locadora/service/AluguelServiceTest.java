@@ -27,15 +27,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 
-/**
- * Testes das regras de aluguel.
- *
- * <p>Sao testes UNITARIOS: nenhum contexto Spring sobe, nenhum banco e usado, os
- * repositorios sao dubles. Rodam em milissegundos e falham por um motivo so — a
- * regra de negocio. Isso e possivel porque {@code AluguelService} recebe suas
- * dependencias pelo construtor; com {@code @Autowired} em campo, seria preciso
- * subir o contexto inteiro para testar um {@code if}.
- */
 class AluguelServiceTest {
 
     private AluguelRepository aluguelRepository;
@@ -87,8 +78,6 @@ class AluguelServiceTest {
                 .isInstanceOf(AluguelNaoPermitidoException.class)
                 .hasMessageContaining("um por vez");
 
-        // A verificacao mais importante deste teste: um cliente barrado nao pode
-        // consumir uma unidade do estoque no caminho.
         verify(filmeRepository, never()).reservarUmaUnidade(anyLong());
         verify(aluguelRepository, never()).saveAndFlush(any());
     }
@@ -99,7 +88,6 @@ class AluguelServiceTest {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario(1L)));
         when(filmeRepository.findById(10L)).thenReturn(Optional.of(filme(10L, "Godzilla", 0)));
         when(aluguelRepository.existsByUsuarioIdAndDevolvidoEmIsNull(1L)).thenReturn(false);
-        // Zero linhas afetadas = o UPDATE condicional nao encontrou estoque.
         when(filmeRepository.reservarUmaUnidade(10L)).thenReturn(0);
 
         assertThatThrownBy(() -> aluguelService.alugar(10L, 1L))
@@ -116,8 +104,6 @@ class AluguelServiceTest {
         when(filmeRepository.findById(10L)).thenReturn(Optional.of(filme(10L, "Godzilla", 3)));
         when(aluguelRepository.existsByUsuarioIdAndDevolvidoEmIsNull(1L)).thenReturn(false);
         when(filmeRepository.reservarUmaUnidade(10L)).thenReturn(1);
-        // Cenario de corrida: outra requisicao do mesmo cliente inseriu primeiro,
-        // e o indice unico parcial rejeitou este insert.
         when(aluguelRepository.saveAndFlush(any(Aluguel.class)))
                 .thenThrow(new DataIntegrityViolationException("uk_aluguel_ativo_por_usuario"));
 
@@ -146,8 +132,6 @@ class AluguelServiceTest {
                 .isInstanceOf(RecursoNaoEncontradoException.class)
                 .hasMessageContaining("Cliente 404");
     }
-
-    // -------------------------------------------------------------- devolucao
 
     @Test
     @DisplayName("devolve o filme, fecha o aluguel e repoe o estoque")
@@ -200,7 +184,6 @@ class AluguelServiceTest {
                 .isInstanceOf(RecursoNaoEncontradoException.class)
                 .hasMessageContaining("nao possui filme alugado");
 
-        // O perdedor da corrida NAO repoe estoque.
         verify(filmeRepository, never()).devolverUmaUnidade(anyLong());
     }
 
@@ -215,8 +198,6 @@ class AluguelServiceTest {
 
         verify(aluguelRepository, never()).registrarDevolucao(anyLong(), any());
     }
-
-    // ------------------------------------------------------------------ apoio
 
     private Aluguel aluguel(Long id, Filme filme, Usuario usuario) {
         Aluguel aluguel = new Aluguel(filme, usuario);

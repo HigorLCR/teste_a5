@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-/** Testes de cadastro e autenticacao de clientes. */
 class UsuarioServiceTest {
 
     private UsuarioRepository usuarioRepository;
@@ -52,7 +51,6 @@ class UsuarioServiceTest {
 
         assertThat(capturado.getValue().getEmail()).isEqualTo("cliente@teste.com");
         assertThat(capturado.getValue().getNome()).isEqualTo("Cliente");
-        // A senha em texto puro nunca chega a entidade.
         assertThat(capturado.getValue().getSenhaHash()).isEqualTo("$2a$10$hash");
         assertThat(capturado.getValue().getSenhaHash()).isNotEqualTo("senha-secreta");
 
@@ -109,8 +107,6 @@ class UsuarioServiceTest {
 
         assertThatThrownBy(() -> usuarioService.autenticar("naoexiste@teste.com", "1234"))
                 .isInstanceOf(CredenciaisInvalidasException.class)
-                // Mesma mensagem do caso de senha errada: nao permite descobrir
-                // quais e-mails existem na base.
                 .hasMessageContaining("E-mail ou senha inválidos");
 
         verify(passwordEncoder, never()).matches(anyString(), anyString());

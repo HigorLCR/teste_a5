@@ -1,27 +1,17 @@
 server:
-  # Sobrescreve a porta padrao do Tomcat (8080) para evitar conflito com outros
-  # servicos locais. Pode ser trocada via variavel de ambiente SERVER_PORT.
   port: ${SERVER_PORT:8089}
 
 spring:
   application:
     name: locadora
 
-  # NAO ha bloco 'datasource' aqui de proposito.
-  # A dependencia spring-boot-docker-compose le o compose.yaml, sobe o container
-  # do Postgres e injeta url/usuario/senha automaticamente. Menos configuracao
-  # duplicada e impossivel dessincronizar os dois arquivos.
+  # Sem bloco 'datasource': a dependencia spring-boot-docker-compose le o
+  # compose.yaml, sobe o Postgres e injeta a conexao.
 
   jpa:
-    # Nao mantem a sessao do banco aberta durante a renderizacao da resposta.
-    # O default 'true' MASCARA o problema de N+1 queries; desligar expoe o erro
-    # cedo, na sua cara, em vez de virar lentidao em producao.
     open-in-view: false
     hibernate:
-      # 'validate' = o Hibernate apenas CONFERE se as entidades batem com as
-      # tabelas. Quem cria/altera tabela e o Flyway (SQL versionado em
-      # src/main/resources/db/migration). Jamais use 'update' em projeto serio:
-      # ele altera schema por adivinhacao e nao deixa historico.
+      # O schema pertence ao Flyway; o Hibernate apenas confere.
       ddl-auto: validate
     properties:
       hibernate:
@@ -29,11 +19,8 @@ spring:
 
   threads:
     virtual:
-      # Virtual threads do Java 21: cada request roda em uma thread virtual,
-      # baratissima. Ganho direto de throughput em API que espera I/O (banco).
       enabled: true
 
-# Endpoints de monitoramento do Actuator.
 management:
   endpoints:
     web:
@@ -41,24 +28,15 @@ management:
         include: health, info
   endpoint:
     health:
-      # Mostra os componentes checados (inclusive o banco) em /actuator/health.
-      # Em producao isso vira 'when-authorized' — expoe detalhes de infra.
       show-details: always
 
 logging:
   level:
-    # Imprime o SQL que o Hibernate gera. Otimo para aprender o que o JPA faz
-    # por baixo e para caçar N+1. Depois mova para um profile 'dev'.
     org.hibernate.SQL: debug
 
-# Configuracao propria da aplicacao (prefixo 'locadora' para nao colidir com as
-# chaves do Spring).
 locadora:
   jwt:
-    # A sintaxe ${VAR:padrao} le a variavel de ambiente e cai no padrao se ela
-    # nao existir. Em producao, JWT_SEGREDO e obrigatorio: quem tem o segredo
-    # consegue forjar tokens de qualquer usuario, entao ele nunca deve ser
-    # versionado. O valor abaixo serve apenas para o ambiente de desenvolvimento.
-    # HS256 exige no minimo 256 bits (32 caracteres) de chave.
+    # Em producao JWT_SEGREDO e obrigatorio: quem tem o segredo forja tokens.
+    # HS256 exige no minimo 256 bits (32 caracteres).
     segredo: ${JWT_SEGREDO:desenvolvimento-godzilla-local-filmes-chave-hmac-nao-usar-em-producao}
     duracao-minutos: ${JWT_DURACAO_MINUTOS:120}

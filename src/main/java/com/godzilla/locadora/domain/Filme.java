@@ -10,27 +10,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Um titulo do catalogo da locadora.
- *
- * <p>{@code estoque} representa quantas unidades estao disponiveis para aluguel
- * neste momento — nao o total adquirido. Alugar decrementa, devolver incrementa.
- */
+/** Um titulo do catalogo. {@code estoque} sao as unidades disponiveis agora. */
 @Entity
 @Table(name = "filme")
 @Getter
 @Setter
-// O JPA exige um construtor sem argumentos: o Hibernate instancia a entidade por
-// reflexao antes de preencher os campos com os dados vindos do banco.
 @NoArgsConstructor
-// Note que NAO usamos @Data nem @EqualsAndHashCode. Em entidade JPA eles sao uma
-// armadilha: geram equals/hashCode sobre todos os campos, incluindo relacoes
-// lazy — o que dispara consultas inesperadas e quebra o contrato de hashCode
-// assim que um campo muda depois de a entidade entrar em uma coleção.
 public class Filme {
 
     @Id
-    // IDENTITY delega a geracao ao banco (coluna GENERATED ... AS IDENTITY).
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

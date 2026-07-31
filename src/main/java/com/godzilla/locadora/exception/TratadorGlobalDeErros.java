@@ -12,19 +12,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * Traducao centralizada de excecoes para respostas HTTP.
- *
- * <p>Este e o unico lugar do projeto que decide qual status corresponde a qual
- * falha. As excecoes de dominio nao carregam mais {@code @ResponseStatus}: elas
- * descrevem o que aconteceu em vocabulario de negocio, e a camada web — aqui —
- * decide como isso se traduz em HTTP. Se amanha a locadora expuser a mesma regra
- * por uma fila ou uma CLI, o dominio nao precisa mudar.
- *
- * <p>As respostas usam {@link ProblemDetail}, a implementacao da RFC 9457
- * (Problem Details for HTTP APIs) que o Spring traz nativamente. O corpo sai com
- * content-type {@code application/problem+json} e formato previsivel, em vez do
- * JSON improvisado do handler padrao — que, em desenvolvimento, ainda vinha com
- * stack trace dentro.
+ * Traducao centralizada de excecoes para respostas HTTP, no formato
+ * {@link ProblemDetail} da RFC 9457. E o unico ponto do projeto que decide qual
+ * status corresponde a qual falha — as excecoes de dominio nao conhecem HTTP.
  */
 @RestControllerAdvice
 public class TratadorGlobalDeErros {
@@ -51,10 +41,6 @@ public class TratadorGlobalDeErros {
         return problema(HttpStatus.UNAUTHORIZED, "Falha na autenticação", e.getMessage());
     }
 
-    /**
-     * Falha de Bean Validation: devolve 400 com o detalhamento campo a campo,
-     * para que o cliente saiba exatamente o que corrigir.
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ProblemDetail tratarValidacao(MethodArgumentNotValidException e) {
         Map<String, String> campos = new LinkedHashMap<>();
@@ -67,21 +53,13 @@ public class TratadorGlobalDeErros {
         return problema;
     }
 
-    /** JSON malformado ou tipo incompativel no corpo da requisicao. */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ProblemDetail tratarCorpoIlegivel(HttpMessageNotReadableException e) {
         return problema(HttpStatus.BAD_REQUEST, "Requisição malformada",
                 "O corpo da requisição não pôde ser lido. Verifique se é um JSON válido.");
     }
 
-    /**
-     * Rede de seguranca para qualquer falha nao prevista.
-     *
-     * <p>A causa real vai para o log, onde a equipe consegue investigar; o cliente
-     * recebe apenas uma mensagem generica. Detalhe interno em resposta de erro —
-     * stack trace, nome de classe, SQL — e informacao util para quem esta
-     * atacando a aplicacao.
-     */
+    /** Rede de seguranca: a causa vai para o log, o cliente recebe apenas o generico. */
     @ExceptionHandler(Exception.class)
     public ProblemDetail tratarErroInesperado(Exception e) {
         log.error("Erro nao tratado", e);

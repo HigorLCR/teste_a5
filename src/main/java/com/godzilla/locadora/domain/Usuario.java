@@ -11,14 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Cliente da locadora.
- *
- * <p>O campo {@code senhaHash} guarda o resultado do BCrypt, nunca a senha
- * digitada. A entidade nao expoe nenhum caminho para recuperar a senha original
- * — isso e proposital, e e o comportamento correto: nem o sistema deve conseguir
- * ler a senha de um usuario.
- */
+/** Cliente da locadora. {@code senhaHash} guarda o BCrypt, nunca a senha. */
 @Entity
 @Table(name = "usuario")
 @Getter

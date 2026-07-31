@@ -16,11 +16,8 @@ public record CadastroUsuarioRequest(
         @Size(max = 180, message = "email deve ter no máximo 180 caracteres")
         String email,
 
+        // O limite de 72 nao e arbitrario: o BCrypt ignora o que passa disso.
         @NotBlank(message = "senha é obrigatória")
         @Size(min = 4, max = 72, message = "senha deve ter entre 4 e 72 caracteres")
         String senha) {
-
-    // O limite de 72 nao e arbitrario: o algoritmo BCrypt ignora silenciosamente
-    // tudo o que passa de 72 bytes. Rejeitar explicitamente e melhor do que
-    // aceitar uma senha longa e truncar parte dela sem o usuario saber.
 }

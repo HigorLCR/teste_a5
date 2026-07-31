@@ -15,11 +15,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * O vinculo entre um cliente e um filme durante o periodo de locacao.
- *
- * <p>{@code devolvidoEm} nulo significa aluguel EM ABERTO. E sobre essa condicao
- * que o indice unico parcial {@code uk_aluguel_ativo_por_usuario} atua, impedindo
- * que o mesmo cliente tenha dois alugueis em aberto ao mesmo tempo.
+ * Vinculo entre cliente e filme durante a locacao. {@code devolvidoEm} nulo
+ * significa aluguel em aberto — condicao do indice unico parcial que impede dois
+ * alugueis simultaneos do mesmo cliente.
  */
 @Entity
 @Table(name = "aluguel")
@@ -32,9 +30,6 @@ public class Aluguel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // LAZY explicito: o padrao de @ManyToOne e EAGER, que carregaria o filme
-    // inteiro em toda consulta de aluguel, mesmo quando nao for usado. EAGER em
-    // varias relacoes e a origem mais comum de N+1 queries.
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "filme_id", nullable = false)
     private Filme filme;

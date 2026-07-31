@@ -1,11 +1,5 @@
--- =============================================================================
--- V2 - Catalogo inicial: a saga Godzilla (Gojira), da Toho
--- =============================================================================
--- Carga de dados tambem versionada, para que qualquer pessoa que clone o
--- projeto tenha exatamente o mesmo catalogo, sem passo manual no README.
---
--- Os titulos com estoque 0 sao intencionais: sao eles que permitem exercitar a
--- resposta 403 FORBIDDEN exigida pelo Teste 1 sem precisar alugar tudo antes.
+-- Os titulos com estoque 0 sao intencionais: permitem exercitar o 403 do
+-- Teste 1 sem precisar esgotar o estoque antes.
 
 INSERT INTO filme (titulo, diretor, ano, estoque) VALUES
     ('Godzilla',                          'Ishiro Honda',       1954, 3),

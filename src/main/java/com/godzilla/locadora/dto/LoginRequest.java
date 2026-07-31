@@ -2,10 +2,7 @@ package com.godzilla.locadora.dto;
 
 import jakarta.validation.constraints.NotBlank;
 
-/**
- * Corpo da requisicao de login, no formato do exemplo do enunciado:
- * {@code {"email": "cliente@cliente.com", "senha": "123@"}}.
- */
+/** Corpo do login, no formato do exemplo do enunciado. */
 public record LoginRequest(
 
         @NotBlank(message = "email é obrigatório")

@@ -18,7 +18,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-/** Testes da consulta ao catalogo. */
 class FilmeServiceTest {
 
     private FilmeRepository filmeRepository;
