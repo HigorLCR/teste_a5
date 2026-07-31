@@ -60,7 +60,7 @@ WHERE Id = 1;
 
 4-
 
-
+coleta todas as pessoas com algum endereço
 ```sql
 SELECT p.Nome,
        e.CEP,
@@ -73,5 +73,21 @@ SELECT p.Nome,
 FROM Pessoa p
 INNER JOIN Pessoa_x_Endereco pe ON pe.IdPessoa = p.Id
 INNER JOIN Endereco e ON e.CEP = pe.CEP
+ORDER BY p.Nome;
+```
+
+coleta todas as pessoas, mesmo sem endereço
+```sql
+SELECT p.Nome,
+       e.CEP,
+       e.Logradouro,
+       e.Bairro,
+       e.Cidade,
+       e.UF,
+       pe.Numero,
+       pe.Complemento
+FROM Pessoa p
+LEFT JOIN Pessoa_x_Endereco pe ON pe.IdPessoa = p.Id
+LEFT JOIN Endereco e ON e.CEP = pe.CEP
 ORDER BY p.Nome;
 ```
