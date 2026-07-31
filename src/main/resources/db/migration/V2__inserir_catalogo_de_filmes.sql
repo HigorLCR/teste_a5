@@ -1,0 +1,38 @@
+-- =============================================================================
+-- V2 - Catalogo inicial: a saga Godzilla (Gojira), da Toho
+-- =============================================================================
+-- Carga de dados tambem versionada, para que qualquer pessoa que clone o
+-- projeto tenha exatamente o mesmo catalogo, sem passo manual no README.
+--
+-- Os titulos com estoque 0 sao intencionais: sao eles que permitem exercitar a
+-- resposta 403 FORBIDDEN exigida pelo Teste 1 sem precisar alugar tudo antes.
+
+INSERT INTO filme (titulo, diretor, ano, estoque) VALUES
+    ('Godzilla',                          'Ishiro Honda',       1954, 3),
+    ('O Contra-Ataque de Godzilla',       'Motoyoshi Oda',      1955, 2),
+    ('King Kong vs. Godzilla',            'Ishiro Honda',       1962, 4),
+    ('Mothra vs. Godzilla',               'Ishiro Honda',       1964, 2),
+    ('Ghidorah, o Monstro de Tres Cabecas','Ishiro Honda',      1964, 1),
+    ('Invasao dos Astro-Monstros',        'Ishiro Honda',       1965, 0),
+    ('O Filho de Godzilla',               'Jun Fukuda',         1967, 2),
+    ('Destruam Todos os Monstros',        'Ishiro Honda',       1968, 3),
+    ('Godzilla vs. Hedorah',              'Yoshimitsu Banno',   1971, 1),
+    ('Godzilla vs. Gigan',                'Jun Fukuda',         1972, 2),
+    ('Godzilla vs. Megalon',              'Jun Fukuda',         1973, 0),
+    ('Godzilla vs. Mechagodzilla',        'Jun Fukuda',         1974, 3),
+    ('O Terror de Mechagodzilla',         'Ishiro Honda',       1975, 1),
+    ('O Retorno de Godzilla',             'Koji Hashimoto',     1984, 2),
+    ('Godzilla vs. Biollante',            'Kazuki Omori',       1989, 1),
+    ('Godzilla vs. King Ghidorah',        'Kazuki Omori',       1991, 2),
+    ('Godzilla vs. Mothra',               'Takao Okawara',      1992, 3),
+    ('Godzilla vs. Mechagodzilla II',     'Takao Okawara',      1993, 2),
+    ('Godzilla vs. SpaceGodzilla',        'Kensho Yamashita',   1994, 1),
+    ('Godzilla vs. Destoroyah',           'Takao Okawara',      1995, 2),
+    ('Godzilla 2000: Millennium',         'Takao Okawara',      1999, 4),
+    ('Godzilla vs. Megaguirus',           'Masaaki Tezuka',     2000, 1),
+    ('Godzilla, Mothra e King Ghidorah',  'Shusuke Kaneko',     2001, 2),
+    ('Godzilla contra Mechagodzilla',     'Masaaki Tezuka',     2002, 1),
+    ('Godzilla: Tokyo S.O.S.',            'Masaaki Tezuka',     2003, 1),
+    ('Godzilla: Final Wars',              'Ryuhei Kitamura',    2004, 3),
+    ('Shin Godzilla',                     'Hideaki Anno',       2016, 5),
+    ('Godzilla Minus One',                'Takashi Yamazaki',   2023, 5);
