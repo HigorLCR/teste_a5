@@ -1,5 +1,8 @@
 HELP.md
 target/
+
+# Zip original baixado do Spring Initializr, mantido apenas localmente
+locadora.zip
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
