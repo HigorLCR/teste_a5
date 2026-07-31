@@ -8,6 +8,7 @@ A aplicação sobe na porta **8089**.
 | `POST` | `/usuarios/login` | pública | Autentica e devolve o token |
 | `GET` | `/locadora/godzilla` | pública | Busca filmes por título parcial e/ou ano |
 | `POST` | `/godzilla` | **Bearer** | Aluga um filme para o cliente autenticado |
+| `POST` | `/godzilla/devolucao` | **Bearer** | Devolve o filme que o cliente está com |
 
 ---
 
@@ -98,6 +99,41 @@ curl -X POST http://localhost:8089/godzilla \
 O catálogo inclui dois títulos com estoque zero — *Invasão dos Astro-Monstros*
 (`filmeId` 6) e *Godzilla vs. Megalon* (`filmeId` 11) — para exercitar o `403`
 sem precisar esgotar o estoque antes.
+
+## Extra — Devolução
+
+Não consta do enunciado, mas sem ela a regra "um filme por vez" tranca o cliente
+para sempre: alugado o primeiro filme, ele nunca mais consegue alugar outro.
+
+Não recebe corpo nem id: pela regra do desafio o cliente tem no máximo um aluguel
+em aberto, e quem ele é já vem do token. Como não há identificador na requisição,
+também não há como devolver o filme de outro cliente.
+
+```bash
+curl -X POST http://localhost:8089/godzilla/devolucao \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+```json
+{
+  "aluguelId": 3,
+  "filmeId": 3,
+  "titulo": "King Kong vs. Godzilla",
+  "usuarioId": 7,
+  "alugadoEm": "2026-07-31T15:42:38.714838Z",
+  "devolvidoEm": "2026-07-31T15:42:38.848306Z"
+}
+```
+
+| Situação | Status |
+|---|---|
+| Devolução registrada | `200 OK` |
+| Cliente não está com nenhum filme | `404 Not Found` |
+| Sem token, ou token inválido/expirado | `401 Unauthorized` |
+
+O aluguel não é apagado: ele recebe `devolvido_em` e sai do índice único parcial,
+preservando o histórico e liberando o cliente para alugar de novo. A unidade
+volta ao estoque na mesma transação do fechamento.
 
 ---
 

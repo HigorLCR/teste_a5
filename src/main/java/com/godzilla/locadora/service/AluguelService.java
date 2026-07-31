@@ -4,11 +4,13 @@ import com.godzilla.locadora.domain.Aluguel;
 import com.godzilla.locadora.domain.Filme;
 import com.godzilla.locadora.domain.Usuario;
 import com.godzilla.locadora.dto.AluguelResponse;
+import com.godzilla.locadora.dto.DevolucaoResponse;
 import com.godzilla.locadora.exception.AluguelNaoPermitidoException;
 import com.godzilla.locadora.exception.RecursoNaoEncontradoException;
 import com.godzilla.locadora.repository.AluguelRepository;
 import com.godzilla.locadora.repository.FilmeRepository;
 import com.godzilla.locadora.repository.UsuarioRepository;
+import java.time.Instant;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,5 +108,40 @@ public class AluguelService {
             throw new AluguelNaoPermitidoException(
                     "Cliente ja possui um filme alugado. E permitido um por vez.");
         }
+    }
+
+    /**
+     * Operacao inversa de {@link #alugar(Long, Long)}: fecha o aluguel e repoe a
+     * unidade no estoque, na mesma transacao.
+     *
+     * <p>Nao recebe id de aluguel — o cliente tem no maximo um em aberto, entao
+     * ele proprio identifica o registro, e ninguem consegue devolver o filme de
+     * outro.
+     *
+     * @throws RecursoNaoEncontradoException se o cliente nao existir ou nao
+     *                                       estiver com nenhum filme
+     */
+    @Transactional
+    public DevolucaoResponse devolver(Long usuarioId) {
+
+        usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Cliente %d nao encontrado".formatted(usuarioId)));
+
+        Aluguel aluguel = aluguelRepository.buscarEmAbertoDoUsuario(usuarioId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Cliente %d nao possui filme alugado.".formatted(usuarioId)));
+
+        Instant devolvidoEm = Instant.now();
+
+        // Perdedor de uma devolucao concorrente: nao repoe estoque.
+        if (aluguelRepository.registrarDevolucao(aluguel.getId(), devolvidoEm) == 0) {
+            throw new RecursoNaoEncontradoException(
+                    "Cliente %d nao possui filme alugado.".formatted(usuarioId));
+        }
+
+        filmeRepository.devolverUmaUnidade(aluguel.getFilme().getId());
+
+        return DevolucaoResponse.de(aluguel, devolvidoEm);
     }
 }

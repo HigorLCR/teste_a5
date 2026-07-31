@@ -2,6 +2,7 @@ package com.godzilla.locadora.controller;
 
 import com.godzilla.locadora.dto.AlugarFilmeRequest;
 import com.godzilla.locadora.dto.AluguelResponse;
+import com.godzilla.locadora.dto.DevolucaoResponse;
 import com.godzilla.locadora.service.AluguelService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -46,5 +47,20 @@ public class AluguelController {
         Long usuarioId = Long.valueOf(jwt.getSubject());
 
         return aluguelService.alugar(requisicao.filmeId(), usuarioId);
+    }
+
+    /**
+     * Devolve o filme que o cliente autenticado esta com. Sem corpo e sem id: o
+     * cliente tem no maximo um aluguel em aberto e sua identidade vem do JWT.
+     *
+     * <p>POST, e nao DELETE: a devolucao encerra o aluguel preenchendo
+     * {@code devolvidoEm}, sem apagar o historico.
+     */
+    @PostMapping("/godzilla/devolucao")
+    public DevolucaoResponse devolver(@AuthenticationPrincipal Jwt jwt) {
+
+        Long usuarioId = Long.valueOf(jwt.getSubject());
+
+        return aluguelService.devolver(usuarioId);
     }
 }

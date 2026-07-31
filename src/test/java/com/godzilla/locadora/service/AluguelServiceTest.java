@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -13,11 +14,13 @@ import com.godzilla.locadora.domain.Aluguel;
 import com.godzilla.locadora.domain.Filme;
 import com.godzilla.locadora.domain.Usuario;
 import com.godzilla.locadora.dto.AluguelResponse;
+import com.godzilla.locadora.dto.DevolucaoResponse;
 import com.godzilla.locadora.exception.AluguelNaoPermitidoException;
 import com.godzilla.locadora.exception.RecursoNaoEncontradoException;
 import com.godzilla.locadora.repository.AluguelRepository;
 import com.godzilla.locadora.repository.FilmeRepository;
 import com.godzilla.locadora.repository.UsuarioRepository;
+import java.time.Instant;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -144,7 +147,82 @@ class AluguelServiceTest {
                 .hasMessageContaining("Cliente 404");
     }
 
+    // -------------------------------------------------------------- devolucao
+
+    @Test
+    @DisplayName("devolve o filme, fecha o aluguel e repoe o estoque")
+    void deveDevolverFilme() {
+        Usuario usuario = usuario(1L);
+        Filme filme = filme(10L, "Godzilla", 2);
+        Aluguel aluguel = aluguel(77L, filme, usuario);
+
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(aluguelRepository.buscarEmAbertoDoUsuario(1L)).thenReturn(Optional.of(aluguel));
+        when(aluguelRepository.registrarDevolucao(eq(77L), any(Instant.class))).thenReturn(1);
+
+        DevolucaoResponse resposta = aluguelService.devolver(1L);
+
+        assertThat(resposta.aluguelId()).isEqualTo(77L);
+        assertThat(resposta.filmeId()).isEqualTo(10L);
+        assertThat(resposta.titulo()).isEqualTo("Godzilla");
+        assertThat(resposta.usuarioId()).isEqualTo(1L);
+        assertThat(resposta.devolvidoEm()).isNotNull();
+        assertThat(resposta.alugadoEm()).isNotNull();
+        verify(filmeRepository).devolverUmaUnidade(10L);
+    }
+
+    @Test
+    @DisplayName("404 quando o cliente nao esta com nenhum filme")
+    void deveFalharQuandoNaoHaAluguelEmAberto() {
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario(1L)));
+        when(aluguelRepository.buscarEmAbertoDoUsuario(1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> aluguelService.devolver(1L))
+                .isInstanceOf(RecursoNaoEncontradoException.class)
+                .hasMessageContaining("nao possui filme alugado");
+
+        verify(filmeRepository, never()).devolverUmaUnidade(anyLong());
+    }
+
+    @Test
+    @DisplayName("devolucao concorrente nao credita estoque duas vezes")
+    void deveIgnorarDevolucaoJaRegistrada() {
+        Usuario usuario = usuario(1L);
+        Filme filme = filme(10L, "Godzilla", 2);
+
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(aluguelRepository.buscarEmAbertoDoUsuario(1L))
+                .thenReturn(Optional.of(aluguel(77L, filme, usuario)));
+        // Zero linhas afetadas = outra requisicao fechou este aluguel primeiro.
+        when(aluguelRepository.registrarDevolucao(eq(77L), any(Instant.class))).thenReturn(0);
+
+        assertThatThrownBy(() -> aluguelService.devolver(1L))
+                .isInstanceOf(RecursoNaoEncontradoException.class)
+                .hasMessageContaining("nao possui filme alugado");
+
+        // O perdedor da corrida NAO repoe estoque.
+        verify(filmeRepository, never()).devolverUmaUnidade(anyLong());
+    }
+
+    @Test
+    @DisplayName("404 ao devolver com cliente inexistente")
+    void deveFalharAoDevolverComClienteInexistente() {
+        when(usuarioRepository.findById(404L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> aluguelService.devolver(404L))
+                .isInstanceOf(RecursoNaoEncontradoException.class)
+                .hasMessageContaining("Cliente 404");
+
+        verify(aluguelRepository, never()).registrarDevolucao(anyLong(), any());
+    }
+
     // ------------------------------------------------------------------ apoio
+
+    private Aluguel aluguel(Long id, Filme filme, Usuario usuario) {
+        Aluguel aluguel = new Aluguel(filme, usuario);
+        aluguel.setId(id);
+        return aluguel;
+    }
 
     private Usuario usuario(Long id) {
         Usuario usuario = new Usuario("Cliente", "cliente@teste.com", "hash");

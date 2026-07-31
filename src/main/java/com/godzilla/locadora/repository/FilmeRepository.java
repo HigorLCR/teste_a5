@@ -65,4 +65,16 @@ public interface FilmeRepository extends JpaRepository<Filme, Long> {
               AND f.estoque > 0
            """)
     int reservarUmaUnidade(@Param("id") Long id);
+
+    /**
+     * Contrapartida de {@link #reservarUmaUnidade(Long)}. Somar no banco, e nao
+     * ler-calcular-gravar na aplicacao, evita lost update entre concorrentes.
+     */
+    @Modifying
+    @Query("""
+           UPDATE Filme f
+              SET f.estoque = f.estoque + 1
+            WHERE f.id = :id
+           """)
+    int devolverUmaUnidade(@Param("id") Long id);
 }
