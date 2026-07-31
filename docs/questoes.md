@@ -40,6 +40,38 @@ fim
 
 ![alt text](image.png)
 
-3-
+
+3- 
+
+inserir
+```sql
+INSERT INTO Pessoa (Nome, DataNascimento)
+VALUES ('Higor Lachini', '1999-01-01');
+```
+
+atualizar
+```sql
+UPDATE Pessoa
+SET Nome = 'Higor Lachini Colli da Rocha',
+    DataNascimento = '2000-11-04'
+WHERE Id = 1;
+```
+
 
 4-
+
+
+```sql
+SELECT p.Nome,
+       e.CEP,
+       e.Logradouro,
+       e.Bairro,
+       e.Cidade,
+       e.UF,
+       pe.Numero,
+       pe.Complemento
+FROM Pessoa p
+INNER JOIN Pessoa_x_Endereco pe ON pe.IdPessoa = p.Id
+INNER JOIN Endereco e ON e.CEP = pe.CEP
+ORDER BY p.Nome;
+```
