@@ -1,3 +1,8 @@
+server:
+  # Sobrescreve a porta padrao do Tomcat (8080) para evitar conflito com outros
+  # servicos locais. Pode ser trocada via variavel de ambiente SERVER_PORT.
+  port: ${SERVER_PORT:8089}
+
 spring:
   application:
     name: locadora
@@ -45,3 +50,15 @@ logging:
     # Imprime o SQL que o Hibernate gera. Otimo para aprender o que o JPA faz
     # por baixo e para caçar N+1. Depois mova para um profile 'dev'.
     org.hibernate.SQL: debug
+
+# Configuracao propria da aplicacao (prefixo 'locadora' para nao colidir com as
+# chaves do Spring).
+locadora:
+  jwt:
+    # A sintaxe ${VAR:padrao} le a variavel de ambiente e cai no padrao se ela
+    # nao existir. Em producao, JWT_SEGREDO e obrigatorio: quem tem o segredo
+    # consegue forjar tokens de qualquer usuario, entao ele nunca deve ser
+    # versionado. O valor abaixo serve apenas para o ambiente de desenvolvimento.
+    # HS256 exige no minimo 256 bits (32 caracteres) de chave.
+    segredo: ${JWT_SEGREDO:desenvolvimento-godzilla-local-filmes-chave-hmac-nao-usar-em-producao}
+    duracao-minutos: ${JWT_DURACAO_MINUTOS:120}
